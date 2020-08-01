@@ -2,6 +2,9 @@ using CareerCloud.EntityFrameworkDataAccess;
 using CareerCloud.Pocos;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Linq.Expressions;
 using System.Reflection;
 
 namespace CareerCloudCore.UnitTests.Assignment4
@@ -430,6 +433,85 @@ namespace CareerCloudCore.UnitTests.Assignment4
             #endregion Cleanup
         }
 
+        [TestMethod]
+        public void Assignment4_DeepDive_ForeignKey_Test_()
+        {
+            _companyDescription.SystemLanguageCode = _systemLangCode;
+            _companyJob.CompanyJobDescriptions = new List<CompanyJobDescriptionPoco>() { _companyJobDescription };
+            _companyJob.CompanyJobEducations = new List<CompanyJobEducationPoco>() { _companyJobEducation };
+            _companyJob.CompanyJobSkills = new List<CompanyJobSkillPoco>() { _companyJobSkill };
+            _companyProfile.CompanyDescriptions = new List<CompanyDescriptionPoco>() { _companyDescription };
+            _companyProfile.CompanyLocations = new List<CompanyLocationPoco>() { _companyLocation };
+            _companyProfile.CompanyJobs = new List<CompanyJobPoco>() { _companyJob };
+            _companyJob.CompanyProfile = _companyProfile;
+
+            _securityLoginRole.SecurityRole = _securityRole;
+            _securityLogin.SecurityLoginsLogs = new List<SecurityLoginsLogPoco>() { _securityLoginLog };
+            _securityLogin.SecurityLoginsRoles = new List<SecurityLoginsRolePoco>() { _securityLoginRole };
+
+            _appliantWorkHistory.SystemCountryCode = _systemCountry;
+            _applicantProfile.SystemCountryCode = _systemCountry;
+            _applicantJobApplication.CompanyJob = _companyJob;
+            _applicantProfile.ApplicantEducations = new List<ApplicantEducationPoco>() { _applicantEducation };
+            _applicantProfile.ApplicantJobApplications = new List<ApplicantJobApplicationPoco>() { _applicantJobApplication };
+            _applicantProfile.ApplicantResumes = new List<ApplicantResumePoco>() { _applicantResume };
+            _applicantProfile.ApplicantSkills = new List<ApplicantSkillPoco>() { _applicantSkills };
+            _applicantProfile.ApplicantWorkHistorys = new List<ApplicantWorkHistoryPoco>() { _appliantWorkHistory };
+            _applicantProfile.SecurityLogin = _securityLogin;
+
+            ApplicantProfileAdd();
+
+            #region ForeanKeyCheck 
+            SystemCountryCodeCheck();
+            SystemLanguageCodeCheck();
+
+            ApplicantSkillForeignKeyCheck();
+            ApplicantResumeForeignKeyCheck();
+            ApplicantJobApplicationForeignKeyCheck();
+            ApplicantEducationForeignKeyCheck();
+            ApplicantProfileForeignKeyCheck();
+            SecurityLoginRoleForeignKeyCheck();
+            SecurityRoleForeignKeyCheck();
+            SecurityLoginLogForeignKeyCheck();
+            SecurityLoginForeignKeyCheck();
+            ApplicantWorkHistoryForeignKeyCheck();
+
+            CompanyJobSkillForeignKeyCheck();
+            CompanyJobEducationForeignKeyCheck();
+            CompanyLocationForeignKeyCheck();
+            CompanyJobDescriptionForeignKeyCheck();
+            CompanyJobForeignKeyCheck();
+            CompanyDescriptionForeignKeyCheck();
+            CompanyProfileForeignKeyCheck();
+
+            #endregion ForeignKeyCheck
+
+            #region Cleanup
+            ApplicantWorkHistoryRemove();
+            ApplicantSkillRemove();
+            ApplicantResumeRemove();
+
+            ApplicantJobApplicationRemove();
+            ApplicantEducationRemove();
+            ApplicantProfileRemove();
+
+            SecurityLoginRoleRemove();
+            SecurityRoleRemove();
+            SecurityLoginLogRemove();
+            SecurityLoginRemove();
+
+            CompanyJobSkillRemove();
+            CompanyJobEducationRemove();
+            CompanyLocationRemove();
+            CompanyJobDescRemove();
+            CompanyJobRemove();
+            CompanyDescriptionRemove();
+            CompanyProfileRemove();
+
+            SystemLanguageCodeRemove();
+            SystemCountryCodeRemove();
+            #endregion Cleanup
+        }
         #region AddImplementation
         private void ApplicantWorkHistoryAdd()
         {
@@ -794,6 +876,403 @@ namespace CareerCloudCore.UnitTests.Assignment4
 
 
         #endregion CheckImplementation
+
+        #region CheckForeignKeyImplementation
+        private void ApplicantSkillForeignKeyCheck()
+        {
+            EFGenericRepository<ApplicantSkillPoco> applicantSkillRepository = new EFGenericRepository<ApplicantSkillPoco>();
+            ApplicantSkillPoco applicantSkillPoco =
+                applicantSkillRepository.GetSingle(t => t.Id == _applicantSkills.Id
+                , new Expression<Func<ApplicantSkillPoco, object>>[]{
+                    c => c.ApplicantProfile
+                });
+            Assert.IsNotNull(applicantSkillPoco);
+            Assert.AreEqual(_applicantSkills.Id, applicantSkillPoco.Id);
+            Assert.AreEqual(_applicantSkills.Applicant, applicantSkillPoco.Applicant);
+            Assert.AreEqual(_applicantSkills.Skill, applicantSkillPoco.Skill);
+            Assert.AreEqual(_applicantSkills.SkillLevel, applicantSkillPoco.SkillLevel);
+            Assert.AreEqual(_applicantSkills.StartMonth, applicantSkillPoco.StartMonth);
+            Assert.AreEqual(_applicantSkills.StartYear, applicantSkillPoco.StartYear);
+            Assert.AreEqual(_applicantSkills.EndMonth, applicantSkillPoco.EndMonth);
+            Assert.AreEqual(_applicantSkills.EndYear, applicantSkillPoco.EndYear);
+            Assert.IsNotNull(applicantSkillPoco.ApplicantProfile);
+            Assert.AreEqual(_applicantProfile.Id, applicantSkillPoco.ApplicantProfile.Id);
+        }
+        private void ApplicantResumeForeignKeyCheck()
+        {
+            EFGenericRepository<ApplicantResumePoco> applicantResumeRepository = new EFGenericRepository<ApplicantResumePoco>();
+            ApplicantResumePoco applicantResumePoco =
+                applicantResumeRepository.GetSingle(t => t.Id == _applicantResume.Id
+                , new Expression<Func<ApplicantResumePoco, object>>[]{
+                    c => c.ApplicantProfile
+                });
+            Assert.IsNotNull(applicantResumePoco);
+            Assert.AreEqual(_applicantResume.Id, applicantResumePoco.Id);
+            Assert.AreEqual(_applicantResume.Applicant, applicantResumePoco.Applicant);
+            Assert.AreEqual(_applicantResume.Resume, applicantResumePoco.Resume);
+            Assert.AreEqual(_applicantResume.LastUpdated.Value.Date, applicantResumePoco.LastUpdated.Value.Date);
+
+            Assert.IsNotNull(applicantResumePoco.ApplicantProfile);
+            Assert.AreEqual(_applicantProfile.Id, applicantResumePoco.ApplicantProfile.Id);
+        }
+        private void ApplicantJobApplicationForeignKeyCheck()
+        {
+            EFGenericRepository<ApplicantJobApplicationPoco> applicantJobApplicationRepository = new EFGenericRepository<ApplicantJobApplicationPoco>();
+            ApplicantJobApplicationPoco applicantJobApplicationPoco =
+                applicantJobApplicationRepository.GetSingle(t => t.Id == _applicantJobApplication.Id
+                , new Expression<Func<ApplicantJobApplicationPoco, object>>[]{
+                    c => c.ApplicantProfile, c => c.CompanyJob
+                });
+            Assert.IsNotNull(applicantJobApplicationPoco);
+            Assert.AreEqual(_applicantJobApplication.Id, applicantJobApplicationPoco.Id);
+            Assert.AreEqual(_applicantJobApplication.Applicant, applicantJobApplicationPoco.Applicant);
+            Assert.AreEqual(_applicantJobApplication.Job, applicantJobApplicationPoco.Job);
+            Assert.AreEqual(_applicantJobApplication.ApplicationDate.Date, applicantJobApplicationPoco.ApplicationDate.Date);
+
+            Assert.IsNotNull(applicantJobApplicationPoco.ApplicantProfile);
+            Assert.AreEqual(_applicantProfile.Id, applicantJobApplicationPoco.ApplicantProfile.Id);
+            Assert.IsNotNull(applicantJobApplicationPoco.CompanyJob);
+            Assert.AreEqual(_companyJob.Id, applicantJobApplicationPoco.CompanyJob.Id);
+
+        }
+        private void ApplicantEducationForeignKeyCheck()
+        {
+            EFGenericRepository<ApplicantEducationPoco> applicantEducationRepository = new EFGenericRepository<ApplicantEducationPoco>();
+            ApplicantEducationPoco applicantEducationPoco =
+                applicantEducationRepository.GetSingle(t => t.Id == _applicantEducation.Id,
+                new Expression<Func<ApplicantEducationPoco, object>>[]{
+                    c => c.ApplicantProfile
+                });
+            Assert.IsNotNull(applicantEducationPoco);
+            Assert.AreEqual(_applicantEducation.Id, applicantEducationPoco.Id);
+            Assert.AreEqual(_applicantEducation.Applicant, applicantEducationPoco.Applicant);
+            Assert.AreEqual(_applicantEducation.Major, applicantEducationPoco.Major);
+            Assert.AreEqual(_applicantEducation.CertificateDiploma, applicantEducationPoco.CertificateDiploma);
+            Assert.AreEqual(_applicantEducation.StartDate.Value.Date, applicantEducationPoco.StartDate.Value.Date);
+            Assert.AreEqual(_applicantEducation.CompletionDate.Value.Date, applicantEducationPoco.CompletionDate.Value.Date);
+            Assert.AreEqual(_applicantEducation.CompletionPercent, applicantEducationPoco.CompletionPercent);
+
+            Assert.IsNotNull(applicantEducationPoco.ApplicantProfile);
+            Assert.AreEqual(_applicantProfile.Id, applicantEducationPoco.ApplicantProfile.Id);
+        }
+        private void ApplicantProfileForeignKeyCheck()
+        {
+            EFGenericRepository<ApplicantProfilePoco> applicantProfileRepository = new EFGenericRepository<ApplicantProfilePoco>();
+            ApplicantProfilePoco applicantProfilePoco =
+                applicantProfileRepository.GetSingle(t => t.Id == _applicantProfile.Id,
+                new Expression<Func<ApplicantProfilePoco, object>>[]{
+                    c => c.ApplicantEducations, c => c.ApplicantJobApplications
+                    , c => c.ApplicantResumes, c => c.ApplicantSkills
+                    , c => c.ApplicantWorkHistorys, c => c.SystemCountryCode
+                });
+            Assert.IsNotNull(applicantProfilePoco);
+            Assert.AreEqual(_applicantProfile.Id, applicantProfilePoco.Id);
+            Assert.AreEqual(_applicantProfile.Login, applicantProfilePoco.Login);
+            Assert.AreEqual(_applicantProfile.CurrentSalary, applicantProfilePoco.CurrentSalary);
+            Assert.AreEqual(_applicantProfile.CurrentRate, applicantProfilePoco.CurrentRate);
+            Assert.AreEqual(_applicantProfile.Currency, applicantProfilePoco.Currency);
+            Assert.AreEqual(_applicantProfile.Country, applicantProfilePoco.Country);
+            Assert.AreEqual(_applicantProfile.Province, applicantProfilePoco.Province);
+            Assert.AreEqual(_applicantProfile.Street, applicantProfilePoco.Street);
+            Assert.AreEqual(_applicantProfile.City, applicantProfilePoco.City);
+            Assert.AreEqual(_applicantProfile.PostalCode, applicantProfilePoco.PostalCode);
+
+            Assert.IsNotNull(applicantProfilePoco.SystemCountryCode);
+            Assert.AreEqual(_systemCountry.Code, applicantProfilePoco.SystemCountryCode.Code);
+
+            Assert.IsNotNull(applicantProfilePoco.ApplicantEducations);
+            Assert.IsTrue(applicantProfilePoco.ApplicantEducations.Count > 0);
+            Assert.AreEqual(_applicantEducation.Id, applicantProfilePoco.ApplicantEducations.FirstOrDefault().Id);
+
+            Assert.IsNotNull(applicantProfilePoco.ApplicantJobApplications);
+            Assert.IsTrue(applicantProfilePoco.ApplicantJobApplications.Count > 0);
+            Assert.AreEqual(_applicantJobApplication.Id, applicantProfilePoco.ApplicantJobApplications.FirstOrDefault().Id);
+
+            Assert.IsNotNull(applicantProfilePoco.ApplicantResumes);
+            Assert.IsTrue(applicantProfilePoco.ApplicantResumes.Count > 0);
+            Assert.AreEqual(_applicantResume.Id, applicantProfilePoco.ApplicantResumes.FirstOrDefault().Id);
+
+            Assert.IsNotNull(applicantProfilePoco.ApplicantSkills);
+            Assert.IsTrue(applicantProfilePoco.ApplicantSkills.Count > 0);
+            Assert.AreEqual(_applicantSkills.Id, applicantProfilePoco.ApplicantSkills.FirstOrDefault().Id);
+
+            Assert.IsNotNull(applicantProfilePoco.ApplicantWorkHistorys);
+            Assert.IsTrue(applicantProfilePoco.ApplicantWorkHistorys.Count > 0);
+            Assert.AreEqual(_appliantWorkHistory.Id, applicantProfilePoco.ApplicantWorkHistorys.FirstOrDefault().Id);
+        }
+        private void SecurityLoginRoleForeignKeyCheck()
+        {
+            EFGenericRepository<SecurityLoginsRolePoco> securityLoginRoleRepository = new EFGenericRepository<SecurityLoginsRolePoco>();
+            SecurityLoginsRolePoco securityLoginsRolePoco =
+                securityLoginRoleRepository.GetSingle(t => t.Id == _securityLoginRole.Id,
+                new Expression<Func<SecurityLoginsRolePoco, object>>[]{
+                    c => c.SecurityLogin, c => c.SecurityRole
+                });
+            Assert.IsNotNull(securityLoginsRolePoco);
+            Assert.AreEqual(_securityLoginRole.Id, securityLoginsRolePoco.Id);
+            Assert.AreEqual(_securityLoginRole.Login, securityLoginsRolePoco.Login);
+            Assert.AreEqual(_securityLoginRole.Role, securityLoginsRolePoco.Role);
+
+            Assert.IsNotNull(securityLoginsRolePoco.SecurityLogin);
+            Assert.AreEqual(_securityLogin.Id, securityLoginsRolePoco.SecurityLogin.Id);
+
+            Assert.IsNotNull(securityLoginsRolePoco.SecurityRole);
+            Assert.AreEqual(_securityRole.Id, securityLoginsRolePoco.SecurityRole.Id);
+
+        }
+        private void SecurityRoleForeignKeyCheck()
+        {
+            EFGenericRepository<SecurityRolePoco> securityRoleRepository = new EFGenericRepository<SecurityRolePoco>();
+            SecurityRolePoco securityRolePoco = securityRoleRepository.GetSingle(t => t.Id == _securityRole.Id,
+                new Expression<Func<SecurityRolePoco, object>>[]{
+                    c => c.SecurityLoginsRoles
+                });
+            Assert.IsNotNull(securityRolePoco);
+            Assert.AreEqual(_securityRole.Id, securityRolePoco.Id);
+            Assert.AreEqual(_securityRole.Role, securityRolePoco.Role);
+            Assert.AreEqual(_securityRole.IsInactive, securityRolePoco.IsInactive);
+
+            Assert.IsNotNull(securityRolePoco.SecurityLoginsRoles);
+            Assert.IsTrue(securityRolePoco.SecurityLoginsRoles.Count > 0);
+            Assert.AreEqual(_securityLoginRole.Id, securityRolePoco.SecurityLoginsRoles.FirstOrDefault().Id);
+        }
+        private void SecurityLoginLogForeignKeyCheck()
+        {
+            EFGenericRepository<SecurityLoginsLogPoco> securityLoginLogRepository = new EFGenericRepository<SecurityLoginsLogPoco>();
+            SecurityLoginsLogPoco securityLoginsLogPoco
+                = securityLoginLogRepository.GetSingle(t => t.Id == _securityLoginLog.Id,
+                new Expression<Func<SecurityLoginsLogPoco, object>>[]{
+                    c => c.SecurityLogin
+                });
+            Assert.IsNotNull(securityLoginsLogPoco);
+            Assert.AreEqual(_securityLoginLog.Id, securityLoginsLogPoco.Id);
+            Assert.AreEqual(_securityLoginLog.Login, securityLoginsLogPoco.Login);
+            Assert.AreEqual(_securityLoginLog.SourceIP, securityLoginsLogPoco.SourceIP);
+            Assert.AreEqual(_securityLoginLog.LogonDate.Date, securityLoginsLogPoco.LogonDate.Date);
+
+            Assert.IsNotNull(securityLoginsLogPoco.SecurityLogin);
+            Assert.AreEqual(_securityLogin.Id, securityLoginsLogPoco.SecurityLogin.Id);
+        }
+        private void SecurityLoginForeignKeyCheck()
+        {
+            EFGenericRepository<SecurityLoginPoco> securityLoginRepository = new EFGenericRepository<SecurityLoginPoco>();
+            SecurityLoginPoco securityLoginPoco
+                = securityLoginRepository.GetSingle(t => t.Id == _securityLogin.Id,
+                new Expression<Func<SecurityLoginPoco, object>>[]{
+                        c => c.ApplicantProfiles, c => c.SecurityLoginsLogs,
+                        c => c.SecurityLoginsRoles
+                });
+            Assert.IsNotNull(securityLoginPoco);
+            Assert.AreEqual(_securityLogin.Id, securityLoginPoco.Id);
+            Assert.AreEqual(_securityLogin.Login, securityLoginPoco.Login);
+            Assert.AreEqual(_securityLogin.Password, securityLoginPoco.Password);
+            Assert.AreEqual(_securityLogin.Created.Date, securityLoginPoco.Created.Date);
+            Assert.AreEqual(_securityLogin.PasswordUpdate, securityLoginPoco.PasswordUpdate);
+            Assert.AreEqual(_securityLogin.AgreementAccepted.Value.Date, securityLoginPoco.AgreementAccepted.Value.Date);
+            Assert.AreEqual(_securityLogin.IsLocked, securityLoginPoco.IsLocked);
+            Assert.AreEqual(_securityLogin.IsInactive, securityLoginPoco.IsInactive);
+            Assert.AreEqual(_securityLogin.EmailAddress, securityLoginPoco.EmailAddress);
+            Assert.AreEqual(_securityLogin.PhoneNumber, securityLoginPoco.PhoneNumber);
+            Assert.AreEqual(_securityLogin.FullName, securityLoginPoco.FullName);
+            Assert.AreEqual(_securityLogin.ForceChangePassword, securityLoginPoco.ForceChangePassword);
+            Assert.AreEqual(_securityLogin.PrefferredLanguage, securityLoginPoco.PrefferredLanguage);
+
+            Assert.IsNotNull(securityLoginPoco.ApplicantProfiles);
+            Assert.IsTrue(securityLoginPoco.ApplicantProfiles.Count > 0);
+            Assert.AreEqual(_applicantProfile.Id, securityLoginPoco.ApplicantProfiles.FirstOrDefault().Id);
+
+            Assert.IsNotNull(securityLoginPoco.SecurityLoginsLogs);
+            Assert.IsTrue(securityLoginPoco.SecurityLoginsLogs.Count > 0);
+            Assert.AreEqual(_securityLoginLog.Id, securityLoginPoco.SecurityLoginsLogs.FirstOrDefault().Id);
+
+            Assert.IsNotNull(securityLoginPoco.SecurityLoginsRoles);
+            Assert.IsTrue(securityLoginPoco.SecurityLoginsRoles.Count > 0);
+            Assert.AreEqual(_securityLoginRole.Id, securityLoginPoco.SecurityLoginsRoles.FirstOrDefault().Id);
+        }
+        private void CompanyJobSkillForeignKeyCheck()
+        {
+            EFGenericRepository<CompanyJobSkillPoco> companyJobSkillRepository = new EFGenericRepository<CompanyJobSkillPoco>();
+            CompanyJobSkillPoco companyJobSkillPoco
+                = companyJobSkillRepository.GetSingle(t => t.Id == _companyJobSkill.Id,
+                new Expression<Func<CompanyJobSkillPoco, object>>[]{
+                        c => c.CompanyJob
+                });
+            Assert.IsNotNull(companyJobSkillPoco);
+            Assert.AreEqual(_companyJobSkill.Id, companyJobSkillPoco.Id);
+            Assert.AreEqual(_companyJobSkill.Job, companyJobSkillPoco.Job);
+            Assert.AreEqual(_companyJobSkill.Skill, companyJobSkillPoco.Skill);
+            Assert.AreEqual(_companyJobSkill.SkillLevel, companyJobSkillPoco.SkillLevel);
+            Assert.AreEqual(_companyJobSkill.Importance, companyJobSkillPoco.Importance);
+
+            Assert.IsNotNull(companyJobSkillPoco.CompanyJob);
+            Assert.AreEqual(_companyJob.Id, companyJobSkillPoco.CompanyJob.Id);
+        }
+        private void CompanyJobEducationForeignKeyCheck()
+        {
+            EFGenericRepository<CompanyJobEducationPoco> companyJobEducationRepo = new EFGenericRepository<CompanyJobEducationPoco>();
+            CompanyJobEducationPoco companyJobEducationPoco
+                = companyJobEducationRepo.GetSingle(t => t.Id == _companyJobEducation.Id,
+                new Expression<Func<CompanyJobEducationPoco, object>>[]{
+                        c => c.CompanyJob
+                });
+            Assert.IsNotNull(companyJobEducationPoco);
+            Assert.AreEqual(_companyJobEducation.Id, companyJobEducationPoco.Id);
+            Assert.AreEqual(_companyJobEducation.Job, companyJobEducationPoco.Job);
+            Assert.AreEqual(_companyJobEducation.Major, companyJobEducationPoco.Major);
+            Assert.AreEqual(_companyJobEducation.Importance, companyJobEducationPoco.Importance);
+
+            Assert.IsNotNull(companyJobEducationPoco.CompanyJob);
+            Assert.AreEqual(_companyJob.Id, companyJobEducationPoco.CompanyJob.Id);
+        }
+        private void CompanyLocationForeignKeyCheck()
+        {
+            EFGenericRepository<CompanyLocationPoco> companyLocationRepo = new EFGenericRepository<CompanyLocationPoco>();
+            CompanyLocationPoco companyLocationPoco
+                = companyLocationRepo.GetSingle(t => t.Id == _companyLocation.Id,
+                new Expression<Func<CompanyLocationPoco, object>>[]{
+                        c => c.CompanyProfile, c => c.SystemCountryCode
+                });
+            Assert.IsNotNull(companyLocationPoco);
+            Assert.AreEqual(_companyLocation.Id, companyLocationPoco.Id);
+            Assert.AreEqual(_companyLocation.Company, companyLocationPoco.Company);
+            Assert.AreEqual(_companyLocation.CountryCode.PadRight(10), companyLocationPoco.CountryCode);
+            Assert.AreEqual(_companyLocation.Province.PadRight(10), companyLocationPoco.Province);
+            Assert.AreEqual(_companyLocation.Street, companyLocationPoco.Street);
+            Assert.AreEqual(_companyLocation.City, companyLocationPoco.City);
+            Assert.AreEqual(_companyLocation.PostalCode.PadRight(20), companyLocationPoco.PostalCode);
+
+            Assert.IsNotNull(companyLocationPoco.CompanyProfile);
+            Assert.AreEqual(_companyProfile.Id, companyLocationPoco.CompanyProfile.Id);
+
+            Assert.IsNotNull(companyLocationPoco.SystemCountryCode);
+            Assert.AreEqual(_systemCountry.Code, companyLocationPoco.SystemCountryCode.Code);
+        }
+        private void CompanyJobDescriptionForeignKeyCheck()
+        {
+            EFGenericRepository<CompanyJobDescriptionPoco> companyJobDescRepo = new EFGenericRepository<CompanyJobDescriptionPoco>();
+            CompanyJobDescriptionPoco companyJobDescPoco
+                = companyJobDescRepo.GetSingle(t => t.Id == _companyJobDescription.Id,
+                new Expression<Func<CompanyJobDescriptionPoco, object>>[]{
+                        c => c.CompanyJob
+                });
+            Assert.IsNotNull(companyJobDescPoco);
+            Assert.AreEqual(_companyJobDescription.Id, companyJobDescPoco.Id);
+            Assert.AreEqual(_companyJobDescription.Job, companyJobDescPoco.Job);
+            Assert.AreEqual(_companyJobDescription.JobDescriptions, companyJobDescPoco.JobDescriptions);
+            Assert.AreEqual(_companyJobDescription.JobName, companyJobDescPoco.JobName);
+
+            Assert.IsNotNull(companyJobDescPoco.CompanyJob);
+            Assert.AreEqual(_companyJob.Id, companyJobDescPoco.CompanyJob.Id);
+        }
+        private void CompanyJobForeignKeyCheck()
+        {
+            EFGenericRepository<CompanyJobPoco> companyJobRepo = new EFGenericRepository<CompanyJobPoco>();
+            CompanyJobPoco companyJobPoco
+                = companyJobRepo.GetSingle(t => t.Id == _companyJob.Id,
+                new Expression<Func<CompanyJobPoco, object>>[]{
+                        c => c.CompanyProfile, c => c.CompanyJobDescriptions,
+                        c => c.CompanyJobEducations, c => c.CompanyJobSkills
+                });
+            Assert.IsNotNull(companyJobPoco);
+            Assert.AreEqual(_companyJob.Id, companyJobPoco.Id);
+            Assert.AreEqual(_companyJob.Company, companyJobPoco.Company);
+            Assert.AreEqual(_companyJob.ProfileCreated, companyJobPoco.ProfileCreated);
+            Assert.AreEqual(_companyJob.IsInactive, companyJobPoco.IsInactive);
+            Assert.AreEqual(_companyJob.IsCompanyHidden, companyJobPoco.IsCompanyHidden);
+
+            Assert.IsNotNull(companyJobPoco.CompanyProfile);
+            Assert.AreEqual(_companyProfile.Id, companyJobPoco.CompanyProfile.Id);
+
+            Assert.IsNotNull(companyJobPoco.CompanyJobDescriptions);
+            Assert.IsTrue(companyJobPoco.CompanyJobDescriptions.Count > 0);
+            Assert.AreEqual(_companyJobDescription.Id, companyJobPoco.CompanyJobDescriptions.FirstOrDefault().Id);
+
+            Assert.IsNotNull(companyJobPoco.CompanyJobEducations);
+            Assert.IsTrue(companyJobPoco.CompanyJobEducations.Count > 0);
+            Assert.AreEqual(_companyJobEducation.Id, companyJobPoco.CompanyJobEducations.FirstOrDefault().Id);
+
+            Assert.IsNotNull(companyJobPoco.CompanyJobSkills);
+            Assert.IsTrue(companyJobPoco.CompanyJobSkills.Count > 0);
+            Assert.AreEqual(_companyJobSkill.Id, companyJobPoco.CompanyJobSkills.FirstOrDefault().Id);
+        }
+        private void CompanyDescriptionForeignKeyCheck()
+        {
+            EFGenericRepository<CompanyDescriptionPoco> companyDescriptionRepo = new EFGenericRepository<CompanyDescriptionPoco>();
+            CompanyDescriptionPoco companyDescriptionPoco
+                = companyDescriptionRepo.GetSingle(t => t.Id == _companyDescription.Id,
+                new Expression<Func<CompanyDescriptionPoco, object>>[]{
+                        c => c.CompanyProfile, c => c.SystemLanguageCode
+                });
+            Assert.IsNotNull(companyDescriptionPoco);
+            Assert.AreEqual(_companyDescription.Id, companyDescriptionPoco.Id);
+            Assert.AreEqual(_companyDescription.CompanyDescription, companyDescriptionPoco.CompanyDescription);
+            Assert.AreEqual(_companyDescription.CompanyName, companyDescriptionPoco.CompanyName);
+            Assert.AreEqual(_companyDescription.LanguageId, companyDescriptionPoco.LanguageId);
+            Assert.AreEqual(_companyDescription.Company, companyDescriptionPoco.Company);
+
+            Assert.IsNotNull(companyDescriptionPoco.CompanyProfile);
+            Assert.AreEqual(_companyProfile.Id, companyDescriptionPoco.CompanyProfile.Id);
+
+            Assert.IsNotNull(companyDescriptionPoco.SystemLanguageCode);
+            Assert.AreEqual(_systemLangCode.LanguageID, companyDescriptionPoco.SystemLanguageCode.LanguageID);
+        }
+        public void CompanyProfileForeignKeyCheck()
+        {
+            EFGenericRepository<CompanyProfilePoco> companyProfileRepo = new EFGenericRepository<CompanyProfilePoco>();
+            CompanyProfilePoco companyProfilePoco
+                = companyProfileRepo.GetSingle(t => t.Id == _companyProfile.Id,
+                new Expression<Func<CompanyProfilePoco, object>>[]{
+                        c => c.CompanyDescriptions, c => c.CompanyJobs,
+                        c => c.CompanyLocations
+                });
+            Assert.IsNotNull(companyProfilePoco);
+            Assert.AreEqual(_companyProfile.CompanyWebsite, companyProfilePoco.CompanyWebsite);
+            Assert.AreEqual(_companyProfile.ContactName, companyProfilePoco.ContactName);
+            Assert.AreEqual(_companyProfile.ContactPhone, companyProfilePoco.ContactPhone);
+            Assert.AreEqual(_companyProfile.RegistrationDate, companyProfilePoco.RegistrationDate);
+            Assert.AreEqual(_companyProfile.Id, companyProfilePoco.Id);
+
+            Assert.IsNotNull(companyProfilePoco.CompanyDescriptions);
+            Assert.IsTrue(companyProfilePoco.CompanyDescriptions.Count > 0);
+            Assert.AreEqual(_companyDescription.Id, companyProfilePoco.CompanyDescriptions.FirstOrDefault().Id);
+
+            Assert.IsNotNull(companyProfilePoco.CompanyJobs);
+            Assert.IsTrue(companyProfilePoco.CompanyJobs.Count > 0);
+            Assert.AreEqual(_companyJob.Id, companyProfilePoco.CompanyJobs.FirstOrDefault().Id);
+
+            Assert.IsNotNull(companyProfilePoco.CompanyLocations);
+            Assert.IsTrue(companyProfilePoco.CompanyLocations.Count > 0);
+            Assert.AreEqual(_companyLocation.Id, companyProfilePoco.CompanyLocations.FirstOrDefault().Id);
+        }
+        private void ApplicantWorkHistoryForeignKeyCheck()
+        {
+            EFGenericRepository<ApplicantWorkHistoryPoco> applicantWorkHistoryRepository = new EFGenericRepository<ApplicantWorkHistoryPoco>();
+            ApplicantWorkHistoryPoco applicantWorkHistoryPoco
+                = applicantWorkHistoryRepository.GetSingle(t => t.Id == _appliantWorkHistory.Id,
+                new Expression<Func<ApplicantWorkHistoryPoco, object>>[]{
+                        c => c.ApplicantProfile, c => c.SystemCountryCode
+                });
+            Assert.IsNotNull(applicantWorkHistoryPoco);
+            Assert.AreEqual(_appliantWorkHistory.Id, applicantWorkHistoryPoco.Id);
+            Assert.AreEqual(_appliantWorkHistory.Applicant, applicantWorkHistoryPoco.Applicant);
+            Assert.AreEqual(_appliantWorkHistory.CompanyName, applicantWorkHistoryPoco.CompanyName);
+            Assert.AreEqual(_appliantWorkHistory.CountryCode, applicantWorkHistoryPoco.CountryCode);
+            Assert.AreEqual(_appliantWorkHistory.Location, applicantWorkHistoryPoco.Location);
+            Assert.AreEqual(_appliantWorkHistory.JobTitle, applicantWorkHistoryPoco.JobTitle);
+            Assert.AreEqual(_appliantWorkHistory.JobDescription, applicantWorkHistoryPoco.JobDescription);
+            Assert.AreEqual(_appliantWorkHistory.StartMonth, applicantWorkHistoryPoco.StartMonth);
+            Assert.AreEqual(_appliantWorkHistory.StartYear, applicantWorkHistoryPoco.StartYear);
+            Assert.AreEqual(_appliantWorkHistory.EndMonth, applicantWorkHistoryPoco.EndMonth);
+            Assert.AreEqual(_appliantWorkHistory.EndYear, applicantWorkHistoryPoco.EndYear);
+
+            Assert.IsNotNull(applicantWorkHistoryPoco.ApplicantProfile);
+            Assert.AreEqual(_applicantProfile.Id, applicantWorkHistoryPoco.ApplicantProfile.Id);
+
+            Assert.IsNotNull(applicantWorkHistoryPoco.SystemCountryCode);
+            Assert.AreEqual(_systemCountry.Code, applicantWorkHistoryPoco.SystemCountryCode.Code);
+        }
+
+        #endregion CheckForeignKeyImplementation
 
         #region UpdateImplementation
         public void CompanyProfileUpdate()
