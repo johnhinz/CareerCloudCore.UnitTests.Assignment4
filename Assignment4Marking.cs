@@ -434,7 +434,7 @@ namespace CareerCloudCore.UnitTests.Assignment4
         }
 
         [TestMethod]
-        public void Assignment4_DeepDive_ForeignKey_Test_()
+        public void Assignment4_DeepDive_ForeignKey_Test()
         {
             _companyDescription.SystemLanguageCode = _systemLangCode;
             _companyJob.CompanyJobDescriptions = new List<CompanyJobDescriptionPoco>() { _companyJobDescription };
